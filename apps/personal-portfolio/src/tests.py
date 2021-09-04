@@ -2,6 +2,7 @@ import pytest
 
 from app import get_price_for_ticker
 from app import PortfolioAsset, Portfolio
+from app import MESSAGE_NOT_ON_PORTFOLIO, MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE
 
 
 # def test_get_price_for_ticker():
@@ -37,9 +38,11 @@ def test_buy_existing_asset():
 
 def test_sell_asset_not_on_portfolio():
     portfolio = Portfolio()
-    portfolio.sell('ITSA4', 200)
 
-    assert portfolio.assets == {}
+    with pytest.raises(Exception) as excinfo:
+        portfolio.sell('ITSA4', 200)
+
+    assert str(excinfo.value) == MESSAGE_NOT_ON_PORTFOLIO
 
 
 def test_sell_more_than_in_portfolio():
@@ -52,9 +55,10 @@ def test_sell_more_than_in_portfolio():
     portfolio.assets[ticker] = asset
 
     sell_qty = 200
-    portfolio.sell(ticker, sell_qty)
+    with pytest.raises(Exception) as excinfo:
+        portfolio.sell(ticker, sell_qty)
 
-    assert asset.quantity == qty
+    assert str(excinfo.value) == MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE
 
 
 def test_sell_all():

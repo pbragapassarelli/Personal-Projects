@@ -6,6 +6,9 @@ API_KEY = os.getenv('API_KEY')
 MAX_REQUESTS_PER_MINUTE = 5
 MAX_REQUESTS_PER_DAY = 500
 
+MESSAGE_NOT_ON_PORTFOLIO = 'Asset is not on portfolio'
+MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE = 'Trying to sell more quantity than available'
+
 def get_price_for_ticker(ticker, key=API_KEY):
     '''
     Receives a ticker and returns the current price
@@ -59,6 +62,8 @@ class Portfolio:
     show(): returns portfolio dict
     '''
 
+
+
     def __init__(self):
         self.assets = {}
 
@@ -73,12 +78,10 @@ class Portfolio:
 
     def sell(self, ticker, quantity):
         if ticker not in self.assets:
-            return
-            #TODO: raise exception - asset does not exist
+            raise Exception(MESSAGE_NOT_ON_PORTFOLIO)
             
         if quantity > self.assets[ticker].quantity:
-            return
-            #TODO: raise exception - Portfolio doesn't have that many of that asset
+            raise Exception(MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE)
 
         if quantity == self.assets[ticker].quantity:
             self.assets[ticker].quantity = 0
