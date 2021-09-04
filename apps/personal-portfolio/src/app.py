@@ -4,14 +4,67 @@ load_dotenv()
 
 API_KEY = os.getenv('API_KEY')
 MAX_REQUESTS_PER_MINUTE = 5
+MAX_REQUESTS_PER_DAY = 500
 
 def get_price_for_ticker(ticker, key=API_KEY):
+    '''
+    Receives a ticker and returns the current price
+    
+    ticker: str
+    key: str
+    ---------------------
+    Returns: float
+    '''
 
     import requests
 
-    url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}.SA&apikey={key}'
-    data = requests.get(url).json()
+    asset_ticker = f'{ticker}.SA'
 
+    url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={asset_ticker}&apikey={key}'
+
+    data = requests.get(url).json()
     price = float(data['Global Quote']['05. price'])
 
     return price
+
+
+class PortfolioAsset:
+    '''
+    ticker: str
+    quantity: float or int
+    '''
+
+    def __init__(self, ticker):
+        self.ticker = ticker
+        self.quantity = 0
+
+    def get_attributes(self):
+        return {'quantity': self.quantity}
+
+
+class Portfolio:
+    '''
+    assets: dict of {'ticker': PortfolioAsset}
+    '''
+
+    def __init__(self):
+        self.assets = {}
+
+    def _add_new_asset(self, ticker):
+        self.assets[ticker] = PortfolioAsset(ticker)
+
+    def buy(self, ticker, quantity):
+        
+        if ticker not in self.assets:
+            self._add_new_asset(ticker)     
+        
+        self.assets[ticker].quantity += quantity
+
+    def show(self):
+        return {asset.ticker: asset.get_attributes() for asset in self.assets.values()}
+
+
+
+
+#TODO: implement Portfolio class
+#TODO: implement Asset class
