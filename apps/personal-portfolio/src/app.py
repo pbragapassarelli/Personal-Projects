@@ -30,6 +30,8 @@ def get_price_for_ticker(ticker, key=API_KEY):
 
 class PortfolioAsset:
     '''
+    ATTRIBUTES
+
     ticker: str
     quantity: float or int
     '''
@@ -39,12 +41,22 @@ class PortfolioAsset:
         self.quantity = 0
 
     def get_attributes(self):
+        '''
+        Returns dict of relevant attributes, except ticker
+        '''
         return {'quantity': self.quantity}
 
 
 class Portfolio:
     '''
+    ATTRIBUTES
+
     assets: dict of {'ticker': PortfolioAsset}
+    -----------
+    PUBLIC METHODS
+
+    buy(ticker, quantity): buys asset on the desired quantity
+    show(): returns portfolio dict
     '''
 
     def __init__(self):
@@ -54,7 +66,6 @@ class Portfolio:
         self.assets[ticker] = PortfolioAsset(ticker)
 
     def buy(self, ticker, quantity):
-        
         if ticker not in self.assets:
             self._add_new_asset(ticker)     
         
