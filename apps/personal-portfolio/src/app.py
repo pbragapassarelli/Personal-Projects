@@ -71,11 +71,27 @@ class Portfolio:
         
         self.assets[ticker].quantity += quantity
 
+    def sell(self, ticker, quantity):
+        if ticker not in self.assets:
+            return
+            #TODO: raise exception - asset does not exist
+            
+        if quantity > self.assets[ticker].quantity:
+            return
+            #TODO: raise exception - Portfolio doesn't have that many of that asset
+
+        if quantity == self.assets[ticker].quantity:
+            self.assets[ticker].quantity = 0
+            self.assets.pop(ticker)
+            return
+
+        self.assets[ticker].quantity -= quantity 
+
     def show(self):
         return {asset.ticker: asset.get_attributes() for asset in self.assets.values()}
 
 
 
 
-#TODO: implement Portfolio class
-#TODO: implement Asset class
+#TODO: implement asset search
+#TODO: modularize app in files: Portfolio, Assets, API Client
