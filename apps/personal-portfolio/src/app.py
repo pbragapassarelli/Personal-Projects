@@ -62,8 +62,6 @@ class Portfolio:
     show(): returns portfolio dict
     '''
 
-
-
     def __init__(self):
         self.assets = {}
 
