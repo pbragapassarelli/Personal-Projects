@@ -68,25 +68,31 @@ class Portfolio:
     def _add_new_asset(self, ticker):
         self.assets[ticker] = PortfolioAsset(ticker)
 
+    def _get_asset_by_ticker(self, ticker):
+        return self.assets[ticker]
+
     def buy(self, ticker, quantity):
         if ticker not in self.assets:
             self._add_new_asset(ticker)     
         
-        self.assets[ticker].quantity += quantity
+        asset = self._get_asset_by_ticker(ticker)
+        asset.quantity += quantity
 
     def sell(self, ticker, quantity):
         if ticker not in self.assets:
             raise Exception(MESSAGE_NOT_ON_PORTFOLIO)
-            
-        if quantity > self.assets[ticker].quantity:
+
+        asset = self._get_asset_by_ticker(ticker)
+
+        if quantity > asset.quantity:
             raise Exception(MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE)
 
-        if quantity == self.assets[ticker].quantity:
-            self.assets[ticker].quantity = 0
+        if quantity == asset.quantity:
+            asset.quantity = 0
             self.assets.pop(ticker)
             return
 
-        self.assets[ticker].quantity -= quantity 
+        asset.quantity -= quantity 
 
     def show(self):
         return {asset.ticker: asset.get_attributes() for asset in self.assets.values()}
