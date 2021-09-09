@@ -15,10 +15,13 @@ def test_buy_asset_for_first_time():
     portfolio = Portfolio()
     ticker = 'ITSA4'
     qty = 100
+    price = 12
 
-    portfolio.buy(ticker, qty)
+    portfolio.buy(ticker, qty, price)
 
     assert portfolio.assets[ticker].quantity == qty
+    assert portfolio.assets[ticker].amount_invested == qty * price
+    assert portfolio.assets[ticker].average_price == price
 
 
 def test_buy_existing_asset():
@@ -26,21 +29,24 @@ def test_buy_existing_asset():
     
     ticker = 'ITSA4'
     qty = 100
-    asset = PortfolioAsset(ticker)
-    asset.quantity = qty
+    price = 13
+    asset = PortfolioAsset(ticker, quantity=qty, amount_invested=qty*price)
     portfolio.assets[ticker] = asset
     
     new_qty = 200
-    portfolio.buy(ticker, new_qty)
+    new_price = 11
+    portfolio.buy(ticker, new_qty, new_price)
 
     assert portfolio.assets[ticker].quantity == qty + new_qty
+    assert portfolio.assets[ticker].amount_invested == (qty*price) + (new_qty*new_price)
+    assert portfolio.assets[ticker].average_price == ((qty*price) + (new_qty*new_price)) / (qty+new_qty)
 
 
 def test_sell_asset_not_on_portfolio():
     portfolio = Portfolio()
 
     with pytest.raises(Exception) as excinfo:
-        portfolio.sell('ITSA4', 200)
+        portfolio.sell('ITSA4', 200, 12)
 
     assert str(excinfo.value) == MESSAGE_NOT_ON_PORTFOLIO
 
@@ -50,13 +56,13 @@ def test_sell_more_than_in_portfolio():
     
     ticker = 'ITSA4'
     qty = 100
-    asset = PortfolioAsset(ticker)
-    asset.quantity = qty
+    amount = 1200
+    asset = PortfolioAsset(ticker, quantity=qty, amount_invested=amount)
     portfolio.assets[ticker] = asset
 
     sell_qty = 200
     with pytest.raises(Exception) as excinfo:
-        portfolio.sell(ticker, sell_qty)
+        portfolio.sell(ticker, sell_qty, 12)
 
     assert str(excinfo.value) == MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE
 
@@ -66,14 +72,17 @@ def test_sell_all():
     
     ticker = 'ITSA4'
     qty = 100
-    asset = PortfolioAsset(ticker)
-    asset.quantity = qty
+    amount = 1200
+    asset = PortfolioAsset(ticker, quantity=qty, amount_invested=amount)
     portfolio.assets[ticker] = asset
 
     sell_qty = qty
-    portfolio.sell(ticker, sell_qty)
+    price = 13
+    portfolio.sell(ticker, sell_qty, price)
 
     assert asset.quantity == 0
+    assert asset.amount_invested == 0
+    assert asset.average_price == amount / qty
     assert portfolio.assets == {}
 
 
@@ -81,12 +90,15 @@ def test_sell_partially():
     portfolio = Portfolio()
     
     ticker = 'ITSA4'
-    qty = 100
-    asset = PortfolioAsset(ticker)
-    asset.quantity = qty
+    buy_qty = 100
+    buy_price = 12
+    asset = PortfolioAsset(ticker, quantity=buy_qty, amount_invested=buy_qty*buy_price)
     portfolio.assets[ticker] = asset
 
     sell_qty = 50
-    portfolio.sell(ticker, sell_qty)
+    sell_price = 13
+    portfolio.sell(ticker, sell_qty, sell_price)
 
-    assert asset.quantity == qty - sell_qty
+    assert asset.quantity == buy_qty - sell_qty
+    assert asset.amount_invested == buy_qty*buy_price - sell_qty*buy_price
+    assert asset.average_price == buy_price

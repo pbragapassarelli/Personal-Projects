@@ -37,17 +37,30 @@ class PortfolioAsset:
 
     ticker: str
     quantity: float or int
+    average_price: float
+    amount_invested: float
     '''
 
-    def __init__(self, ticker):
+    def __init__(
+        self, 
+        ticker,
+        quantity=0,
+        amount_invested=0
+    ):
         self.ticker = ticker
-        self.quantity = 0
+        self.quantity = quantity
+        self.average_price = amount_invested / quantity if quantity > 0 else 0
+        self.amount_invested = amount_invested
 
     def get_attributes(self):
         '''
         Returns dict of relevant attributes, except ticker
         '''
-        return {'quantity': self.quantity}
+        return {
+            'quantity': self.quantity,
+            'average_price': self.average_price,
+            'amount_invested': self.amount_invested
+        }
 
 
 class Portfolio:
@@ -71,14 +84,17 @@ class Portfolio:
     def _get_asset_by_ticker(self, ticker):
         return self.assets[ticker]
 
-    def buy(self, ticker, quantity):
+    def buy(self, ticker, quantity, price):
         if ticker not in self.assets:
             self._add_new_asset(ticker)     
         
         asset = self._get_asset_by_ticker(ticker)
+        
         asset.quantity += quantity
+        asset.amount_invested += quantity * price
+        asset.average_price = asset.amount_invested / asset.quantity
 
-    def sell(self, ticker, quantity):
+    def sell(self, ticker, quantity, price):
         if ticker not in self.assets:
             raise Exception(MESSAGE_NOT_ON_PORTFOLIO)
 
@@ -87,18 +103,12 @@ class Portfolio:
         if quantity > asset.quantity:
             raise Exception(MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE)
 
-        if quantity == asset.quantity:
-            asset.quantity = 0
-            self.assets.pop(ticker)
-            return
+        asset.quantity -= quantity
+        asset.amount_invested -= quantity * asset.average_price
 
-        asset.quantity -= quantity 
+        if asset.quantity == 0:
+            self.assets.pop(ticker)
 
     def show(self):
         return {asset.ticker: asset.get_attributes() for asset in self.assets.values()}
-
-
-
-
-#TODO: implement asset search
-#TODO: modularize app in files: Portfolio, Assets, API Client
+        
