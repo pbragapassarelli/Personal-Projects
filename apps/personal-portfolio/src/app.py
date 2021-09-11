@@ -133,3 +133,4 @@ class Portfolio:
 
     def show(self):
         return {asset.ticker: asset.get_attributes() for asset in self.assets}
+# test
