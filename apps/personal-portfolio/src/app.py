@@ -2,9 +2,13 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+import time
+
 API_KEY = os.getenv('API_KEY')
 MAX_REQUESTS_PER_MINUTE = 5
 MAX_REQUESTS_PER_DAY = 500
+
+SECONDS_IN_A_MINUTE = 60
 
 MESSAGE_NOT_ON_PORTFOLIO = 'Asset is not on portfolio'
 MESSAGE_TRYING_TO_SELL_MORE_THAN_AVAILABLE = 'Trying to sell more quantity than available'
@@ -39,6 +43,8 @@ class PortfolioAsset:
     quantity: float or int
     average_price: float
     amount_invested: float
+    current_price: float
+    current_exposition: float
     '''
 
     def __init__(
@@ -51,6 +57,8 @@ class PortfolioAsset:
         self.quantity = quantity
         self.average_price = amount_invested / quantity if quantity > 0 else 0
         self.amount_invested = amount_invested
+        self.current_price = 0
+        self.current_exposition = self.current_price * self.quantity 
 
     def get_attributes(self):
         '''
@@ -59,8 +67,15 @@ class PortfolioAsset:
         return {
             'quantity': self.quantity,
             'average_price': self.average_price,
-            'amount_invested': self.amount_invested
+            'amount_invested': self.amount_invested,
+            'current_price': self.current_price,
+            'current_exposition': self.current_exposition
         }
+
+    def update_price_and_exposition(self):
+        #TODO: Como testar?
+        self.current_price = get_price_for_ticker(self.ticker)
+        self.current_exposition = self.current_price * self.quantity
 
 
 class Portfolio:
@@ -109,6 +124,14 @@ class Portfolio:
         if asset.quantity == 0:
             self.assets.pop(ticker)
 
+    def update(self):
+        #TODO: como testar?
+        i = 0
+        for asset in self.assets.values():
+            i+=1
+            asset.update_price_and_exposition()
+            if i < len(self.assets):
+                time.sleep(SECONDS_IN_A_MINUTE/MAX_REQUESTS_PER_MINUTE)
+
     def show(self):
         return {asset.ticker: asset.get_attributes() for asset in self.assets.values()}
-        
