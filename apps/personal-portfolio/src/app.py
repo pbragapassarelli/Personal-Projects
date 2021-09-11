@@ -82,25 +82,23 @@ class Portfolio:
     '''
     ATTRIBUTES
 
-    assets: dict of {'ticker': PortfolioAsset}
-    -----------
-    PUBLIC METHODS
-
-    buy(ticker, quantity): buys asset on the desired quantity
-    show(): returns portfolio dict
+    assets: list of PortfolioAsset elements
     '''
 
     def __init__(self):
-        self.assets = {}
+        self.assets = []
 
     def _add_new_asset(self, ticker):
-        self.assets[ticker] = PortfolioAsset(ticker)
+        self.assets.append(PortfolioAsset(ticker)) 
 
     def _get_asset_by_ticker(self, ticker):
-        return self.assets[ticker]
+        return next(filter(lambda x: x.ticker == ticker,  self.assets), None)
+
+    def _has(self, ticker):
+        return not self._get_asset_by_ticker(ticker) is None
 
     def buy(self, ticker, quantity, price):
-        if ticker not in self.assets:
+        if not self._has(ticker):
             self._add_new_asset(ticker)     
         
         asset = self._get_asset_by_ticker(ticker)
@@ -110,7 +108,7 @@ class Portfolio:
         asset.average_price = asset.amount_invested / asset.quantity
 
     def sell(self, ticker, quantity, price):
-        if ticker not in self.assets:
+        if not self._has(ticker):
             raise Exception(MESSAGE_NOT_ON_PORTFOLIO)
 
         asset = self._get_asset_by_ticker(ticker)
@@ -122,16 +120,16 @@ class Portfolio:
         asset.amount_invested -= quantity * asset.average_price
 
         if asset.quantity == 0:
-            self.assets.pop(ticker)
+            self.assets.remove(asset)
 
     def update(self):
         #TODO: como testar?
         i = 0
-        for asset in self.assets.values():
+        for asset in self.assets:
             i+=1
             asset.update_price_and_exposition()
             if i < len(self.assets):
                 time.sleep(SECONDS_IN_A_MINUTE/MAX_REQUESTS_PER_MINUTE)
 
     def show(self):
-        return {asset.ticker: asset.get_attributes() for asset in self.assets.values()}
+        return {asset.ticker: asset.get_attributes() for asset in self.assets}

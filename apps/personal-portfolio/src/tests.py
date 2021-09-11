@@ -19,9 +19,9 @@ def test_buy_asset_for_first_time():
 
     portfolio.buy(ticker, qty, price)
 
-    assert portfolio.assets[ticker].quantity == qty
-    assert portfolio.assets[ticker].amount_invested == qty * price
-    assert portfolio.assets[ticker].average_price == price
+    assert portfolio._get_asset_by_ticker(ticker).quantity == qty
+    assert portfolio._get_asset_by_ticker(ticker).amount_invested == qty * price
+    assert portfolio._get_asset_by_ticker(ticker).average_price == price
 
 
 def test_buy_existing_asset():
@@ -31,15 +31,15 @@ def test_buy_existing_asset():
     qty = 100
     price = 13
     asset = PortfolioAsset(ticker, quantity=qty, amount_invested=qty*price)
-    portfolio.assets[ticker] = asset
+    portfolio.assets.append(asset)
     
     new_qty = 200
     new_price = 11
     portfolio.buy(ticker, new_qty, new_price)
 
-    assert portfolio.assets[ticker].quantity == qty + new_qty
-    assert portfolio.assets[ticker].amount_invested == (qty*price) + (new_qty*new_price)
-    assert portfolio.assets[ticker].average_price == ((qty*price) + (new_qty*new_price)) / (qty+new_qty)
+    assert portfolio._get_asset_by_ticker(ticker).quantity == qty + new_qty
+    assert portfolio._get_asset_by_ticker(ticker).amount_invested == (qty*price) + (new_qty*new_price)
+    assert portfolio._get_asset_by_ticker(ticker).average_price == ((qty*price) + (new_qty*new_price)) / (qty+new_qty)
 
 
 def test_sell_asset_not_on_portfolio():
@@ -58,7 +58,7 @@ def test_sell_more_than_in_portfolio():
     qty = 100
     amount = 1200
     asset = PortfolioAsset(ticker, quantity=qty, amount_invested=amount)
-    portfolio.assets[ticker] = asset
+    portfolio.assets.append(asset)
 
     sell_qty = 200
     with pytest.raises(Exception) as excinfo:
@@ -74,7 +74,7 @@ def test_sell_all():
     qty = 100
     amount = 1200
     asset = PortfolioAsset(ticker, quantity=qty, amount_invested=amount)
-    portfolio.assets[ticker] = asset
+    portfolio.assets.append(asset)
 
     sell_qty = qty
     price = 13
@@ -83,7 +83,7 @@ def test_sell_all():
     assert asset.quantity == 0
     assert asset.amount_invested == 0
     assert asset.average_price == amount / qty
-    assert portfolio.assets == {}
+    assert portfolio.assets == []
 
 
 def test_sell_partially():
@@ -93,7 +93,7 @@ def test_sell_partially():
     buy_qty = 100
     buy_price = 12
     asset = PortfolioAsset(ticker, quantity=buy_qty, amount_invested=buy_qty*buy_price)
-    portfolio.assets[ticker] = asset
+    portfolio.assets.append(asset)
 
     sell_qty = 50
     sell_price = 13
