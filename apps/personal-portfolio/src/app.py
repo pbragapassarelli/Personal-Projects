@@ -119,7 +119,7 @@ class Portfolio:
         asset.quantity -= quantity
         asset.amount_invested -= quantity * asset.average_price
 
-        if asset.quantity == 0:
+        if asset.quantity == 0: #TODO: é responsabilidade do sell() remover o ativo da carteira?
             self.assets.remove(asset)
 
     def update(self):
